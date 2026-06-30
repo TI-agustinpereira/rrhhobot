@@ -5,14 +5,21 @@ from fastapi import FastAPI, HTTPException, Request, Response, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from botbuilder.core import BotFrameworkAdapter, BotFrameworkAdapterSettings
-from botbuilder.schema import Activity
 from dotenv import load_dotenv
 
 from api.routes.chats import router as chats_router
-from api.bot import HRBot
 from api.auth import verificar_credenciales
 from db.connection import verificar_conexion
+
+# Teams es opcional: en el deploy web slim botbuilder no se instala, asi que
+# si no esta disponible se omite el adaptador y la app igual sirve la web.
+try:
+    from botbuilder.core import BotFrameworkAdapter, BotFrameworkAdapterSettings
+    from botbuilder.schema import Activity
+    from api.bot import HRBot
+    TEAMS_DISPONIBLE = True
+except ModuleNotFoundError:
+    TEAMS_DISPONIBLE = False
 
 """
 main.py
@@ -56,35 +63,35 @@ def index(usuario: str = Depends(verificar_credenciales)):
     return FileResponse(STATIC_DIR / "index.html")
 
 
-# adaptador Bot Framework
-settings = BotFrameworkAdapterSettings(
-    app_id=os.getenv("MicrosoftAppId", ""),
-    app_password=os.getenv("MicrosoftAppPassword", ""),
-)
-adapter = BotFrameworkAdapter(settings)
-bot = HRBot()
+# adaptador Bot Framework (solo si botbuilder esta instalado)
+if TEAMS_DISPONIBLE:
+    settings = BotFrameworkAdapterSettings(
+        app_id=os.getenv("MicrosoftAppId", ""),
+        app_password=os.getenv("MicrosoftAppPassword", ""),
+    )
+    adapter = BotFrameworkAdapter(settings)
+    bot = HRBot()
 
+    @app.post("/api/messages")
+    async def messages(request: Request):
+        """
+        endpoint que recibe todos los mensajes de teams
+        bot framework autentica la request y la delega al HRBot.
+        """
+        if "application/json" not in request.headers.get("Content-Type", ""):
+            return Response(status_code=415)
 
-@app.post("/api/messages")
-async def messages(request: Request):
-    """
-    endpoint que recibe todos los mensajes de teams
-    bot framework autentica la request y la delega al HRBot.
-    """
-    if "application/json" not in request.headers.get("Content-Type", ""):
-        return Response(status_code=415)
+        body = await request.json()
+        activity = Activity().deserialize(body)
+        auth_header = request.headers.get("Authorization", "")
 
-    body = await request.json()
-    activity = Activity().deserialize(body)
-    auth_header = request.headers.get("Authorization", "")
+        try:
+            await adapter.process_activity(activity, auth_header, bot.on_turn)
+        except Exception as e:
+            logger.exception("Error procesando request")
+            raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
-    try:
-        await adapter.process_activity(activity, auth_header, bot.on_turn)
-    except Exception as e:
-        logger.exception("Error procesando request")
-        raise HTTPException(status_code=500, detail="Error interno del servidor.")
-
-    return Response(status_code=201)
+        return Response(status_code=201)
 
 
 # health check

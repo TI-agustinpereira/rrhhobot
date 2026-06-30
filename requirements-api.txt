@@ -7,9 +7,6 @@ psycopg2-binary==2.9.12
 python-dotenv==1.2.2
 pydantic==2.13.4
 
-# adaptador de teams: main.py lo importa a nivel de modulo, asi que es necesario
-# aunque la web no use /api/messages
-botbuilder-core==4.17.1
-botbuilder-schema==4.17.1
-botframework-connector==4.17.1
-aiohttp==3.13.5   # dep transitiva de botframework-connector que no se resuelve sola
+# El stack de Teams (botbuilder/botframework) NO se incluye: la web no usa
+# /api/messages. main.py importa Teams de forma opcional (try/except), asi que
+# la app levanta igual sin estas deps. Para correr Teams en local, instalalas aparte.
