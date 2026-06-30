@@ -12,3 +12,4 @@ pydantic==2.13.4
 botbuilder-core==4.17.1
 botbuilder-schema==4.17.1
 botframework-connector==4.17.1
+aiohttp==3.13.5   # dep transitiva de botframework-connector que no se resuelve sola
