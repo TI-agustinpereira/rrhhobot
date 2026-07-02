@@ -7,8 +7,7 @@ ocr.py
 
 Modulo de OCR para paginas escaneadas (imagenes sin capa de texto).
 
-Reemplaza a pymupdf4llm para el path de scans: pymupdf4llm NO hace OCR, solo
-extrae la capa de texto ya existente en el PDF. Cuando una pagina es una imagen
+Reemplaza a pymupdf4llm para el path de scans. Cuando una pagina es una imagen
 pura (get_text() devuelve 0 caracteres), pymupdf4llm la omite con un marcador
 del tipo '==> picture [...] intentionally omitted <=='.
 
@@ -20,7 +19,7 @@ contaminen el texto que luego se estructura en clausulas.
 
 # Configuracion ------------------------------------------------------------
 
-OCR_DPI = 400            # resolucion de render
+OCR_DPI = 550            # resolucion de render
 OCR_LANG = "spa"         # idioma de Tesseract (requiere el traineddata 'spa' instalado)
 MARGEN_DERECHO = 0.82    # se descarta todo lo que este a la derecha de este % del ancho (firmas/rubricas)
 MARGEN_INFERIOR = 1.0    # idem para el pie de pagina (1.0 = no recortar; bajar si el pie trae firmas)
