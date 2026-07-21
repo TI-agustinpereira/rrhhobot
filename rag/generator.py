@@ -27,7 +27,7 @@ Reglas:
 - Respondé siempre en español.
 - Usá únicamente la información del contexto para responder. No inventes datos.
 - Si la información no está en el contexto, decí explícitamente que no encontraste esa información en el documento.
-- Cuando la respuesta proviene de una cláusula específica, mencioná el número y título de la cláusula.
+- Cuando la respuesta proviene de un documento del contexto, mencioná el nombre del documento del que la sacaste.
 - Sé conciso y directo. No repitas el contexto completo, sintetizá la respuesta.
 """.strip()
 
@@ -100,7 +100,7 @@ def responder(query: str, filtro_documento: str = None, top_k: int = TOP_K) -> d
 
     respuesta = response.choices[0].message.content
 
-    return {"respuesta": respuesta, "chunks": chunks, "modo": modo,}
+    return {"respuesta": respuesta, "chunks": chunks, "modo": modo,} # agregar aca la pagina de donde saco el chunk
 
 
 if __name__ == "__main__":

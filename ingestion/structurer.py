@@ -1,11 +1,13 @@
 import os
+import re
 import json
+import unicodedata
 import tiktoken
 from openai import OpenAI
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
-from ingestion.pdf_ingestion import DocumentResult
+from ingestion.pdf_ingestion import DocumentResult, PageResult
 
 """
 structurer.py
@@ -125,6 +127,43 @@ def llamar_llm(texto_documento: str) -> list[dict]:
     data = json.loads(contenido)
     return data.get("clausulas", [])
 
+PREFIJO_MATCH = 40   # caracteres del inicio de la clausula usados para ubicar la pagina
+
+def _normalizar(texto: str) -> str:
+    """
+    Normaliza texto para comparar el OCR de una pagina contra el texto que devolvio
+    el LLM: saca acentos, pasa a minusculas, elimina puntuacion y colapsa espacios.
+    Asi el match no falla por diferencias de tildes/espacios/mayusculas.
+    """
+    texto = unicodedata.normalize("NFKD", texto)
+    texto = "".join(c for c in texto if not unicodedata.combining(c))  # saca acentos
+    texto = texto.lower()
+    texto = re.sub(r"[^a-z0-9 ]", " ", texto)   # saca puntuacion
+    texto = re.sub(r"\s+", " ", texto).strip()  # colapsa espacios
+    return texto
+
+def calcular_pagina(texto_clausula: str, paginas: list[PageResult]) -> int:
+    """
+    Determina en que pagina empieza una clausula, buscando el prefijo de su texto
+    (normalizado) dentro del texto de cada pagina.
+
+    Params:
+- texto_clausula: el cuerpo de la clausula devuelto por el LLM (sin overlap todavia)
+- paginas: lista de PageResult del documento, en orden
+
+    Returns:
+- el page_number de la primera pagina que contiene el prefijo, o 0 si no se encuentra
+    """
+    prefijo = _normalizar(texto_clausula)[:PREFIJO_MATCH]
+    if not prefijo:
+        return 0
+
+    for pagina in paginas:
+        if prefijo in _normalizar(pagina.texto):
+            return pagina.page_number
+
+    return 0
+
 def estructurar_documento(doc_result: DocumentResult) -> list[Clausula]:
     """
     Toma el resultado de la ingesta de un pdf y devuelve una lista de clausulas estructuradas.
@@ -146,8 +185,17 @@ def estructurar_documento(doc_result: DocumentResult) -> list[Clausula]:
     
     clausulas_raw = llamar_llm(texto)
     print(f"  LLM identificó {len(clausulas_raw)} cláusulas")
+
+    # pisar la pagina que adivino el LLM con la pagina real (matching contra el OCR).
+    # Se hace aca, sobre el texto limpio de la clausula, ANTES de que el chunker
+    # le agregue el overlap de la clausula anterior (que arruinaria el match).
+    for clausula_dict in clausulas_raw:
+        clausula_dict["pagina"] = calcular_pagina(
+            clausula_dict.get("texto", ""), doc_result.paginas
+        )
+
     for c in clausulas_raw:
-        print(f"  ID: {c.get('id')} | Titulo: {c.get('titulo')} | Texto[:50]: {c.get('texto','')[:50]}")
+        print(f"  ID: {c.get('id')} | Pág: {c.get('pagina')} | Titulo: {c.get('titulo')} | Texto[:50]: {c.get('texto','')[:50]}")
 
     clausulas = []
 
@@ -168,21 +216,3 @@ def estructurar_documento(doc_result: DocumentResult) -> list[Clausula]:
 
     print(f"  Total chunks generados: {len(clausulas)}")
     return clausulas
-
-
-# if __name__ == "__main__":
-#     import sys
-#     from ingestion.pdf_ingestion import procesar_pdf
-
-#     if len(sys.argv) < 2:
-#         print("Uso: python structurer.py <ruta_pdf>")
-#         sys.exit(1)
-
-#     print(f"Procesando: {sys.argv[1]}")
-#     doc = procesar_pdf(sys.argv[1])
-#     clausulas = estructurar_documento(doc)
-
-#     print(f"\nResultado: {len(clausulas)} cláusulas\n")
-#     for c in clausulas:
-#         tokens = contar_tokens(c.texto)
-#         print(f"  [{c.id}] {c.titulo} — página {c.pagina} — {tokens} tokens")

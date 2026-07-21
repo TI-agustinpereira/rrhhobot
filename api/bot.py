@@ -47,20 +47,17 @@ class HRBot(ActivityHandler):
         respuesta_texto = resultado["respuesta"]
         chunks = resultado["chunks"]
 
-        # armar fuentes sin exponer el nombre del documento
+        # armar fuentes citando el documento de origen
         if chunks:
             fuentes_lines = []
             seen = set()
             for c in chunks:
-                cid    = c.metadata.get("clausula_id", "?")
-                titulo = c.metadata.get("clausula_titulo", "")
+                documento = c.metadata.get("documento", "?")
                 pagina = c.metadata.get("pagina", 0)
-                key = (cid, titulo)
+                key = (documento, pagina)
                 if key not in seen:
                     seen.add(key)
-                    label = f"Cláusula {cid}"
-                    if titulo and titulo != "Sin título":
-                        label += f" — {titulo}"
+                    label = documento
                     if pagina:
                         label += f" (p. {pagina})"
                     fuentes_lines.append(f"• {label}")

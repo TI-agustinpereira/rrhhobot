@@ -10,14 +10,7 @@ Modulo de OCR para paginas escaneadas (imagenes sin capa de texto).
 Reemplaza a pymupdf4llm para el path de scans. Cuando una pagina es una imagen
 pura (get_text() devuelve 0 caracteres), pymupdf4llm la omite con un marcador
 del tipo '==> picture [...] intentionally omitted <=='.
-
-Aca renderizamos la pagina a imagen y la pasamos por Tesseract. Ademas recortamos
-el margen derecho antes de OCRear: en los contratos/actas tipicos, las firmas y
-rubricas manuscritas caen en ese margen, y recortandolas en origen evitamos que
-contaminen el texto que luego se estructura en clausulas.
 """
-
-# Configuracion ------------------------------------------------------------
 
 OCR_DPI = 550            # resolucion de render
 OCR_LANG = "spa"         # idioma de Tesseract (requiere el traineddata 'spa' instalado)
@@ -34,7 +27,7 @@ def ocr_pagina(pagina: fitz.Page) -> str:
 
     Params:
 - pagina: objeto fitz.Page ya abierto (se reutiliza el documento del caller,
-          asi no se reabre el PDF por cada pagina).
+        asi no se reabre el PDF por cada pagina).
 
     Returns:
 - el texto reconocido por Tesseract en la region central de la pagina.
@@ -60,7 +53,7 @@ def ocr_pagina(pagina: fitz.Page) -> str:
     pix = pagina.get_pixmap(dpi=OCR_DPI, clip=clip)
     modo = "RGBA" if pix.alpha else "RGB"
     img = Image.frombytes(modo, (pix.width, pix.height), pix.samples)
-    img = img.convert("L")   # escala de grises: ayuda a Tesseract con glifos pequeños
+    img = img.convert("L")   # escala de grises que ayuda a Tesseract con caracteres chicos
 
     try:
         return pytesseract.image_to_string(img, lang=OCR_LANG)

@@ -72,27 +72,3 @@ def generar_chunks(clausulas: list[Clausula]) -> list[Chunk]:
         ))
     print("chunks generados:", len(chunks))
     return chunks
-
-# if __name__ == "__main__":
-#     import sys
-#     from ingestion.pdf_ingestion import procesar_pdf
-#     from ingestion.structurer import estructurar_documento
-
-#     if len(sys.argv) < 2:
-#         print("Uso: python chunker.py <ruta_pdf>")
-#         sys.exit(1)
-
-#     print(f"\nPaso 1 — Ingesta: {sys.argv[1]}")
-#     doc = procesar_pdf(sys.argv[1])
-
-#     print(f"\nPaso 2 — Estructuración...")
-#     clausulas = estructurar_documento(doc)
-
-#     print(f"\nPaso 3 — Chunking...")
-#     chunks = generar_chunks(clausulas)
-
-#     print(f"\nResultado: {len(chunks)} chunks generados\n")
-#     for c in chunks:
-#         tokens = contar_tokens(c.texto)
-#         overlap_str = "con overlap" if c.metadata["tiene_overlap"] else "sin overlap"
-#         print(f"  [{c.metadata['clausula_id']}] {c.metadata['clausula_titulo']} "f"— {tokens} tokens — {overlap_str}")

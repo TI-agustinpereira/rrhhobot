@@ -1,0 +1,13 @@
+# entorno / secretos
+.env
+
+# entornos virtuales
+venv/
+.venv/
+
+# python
+__pycache__/
+*.pyc
+
+# documentos fuente (se procesan solo en local)
+docs/

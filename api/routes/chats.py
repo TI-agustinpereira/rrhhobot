@@ -25,6 +25,7 @@ class FuenteResponse(BaseModel):
     clausula_titulo: str
     pagina: int
     similitud: float
+    documento: str  
     # documento no se expone — los nombres de archivos son confidenciales
 
 
@@ -61,6 +62,7 @@ def chat(request: ChatRequest):
             clausula_titulo= c.metadata.get("clausula_titulo", "?"),
             pagina=          c.metadata.get("pagina", 0),
             similitud=       round(c.similitud, 3),
+            documento= c.metadata.get("documento", "?"),
         )
         for c in resultado["chunks"]
     ]
