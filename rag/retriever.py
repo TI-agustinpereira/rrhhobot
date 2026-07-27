@@ -13,7 +13,7 @@ Archivo encargado de realizar las consultas a la base de datos, tanto por simili
 load_dotenv()
 
 EMBEDDING_MODEL = "text-embedding-3-small"
-TOP_K_DEFAULT = 4 # devuelve los K mas cercanos para rearmar el contexto
+TOP_K_DEFAULT = 10 # devuelve los K mas cercanos para rearmar el contexto
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 

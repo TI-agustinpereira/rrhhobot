@@ -1,5 +1,8 @@
+import os
+
 import fitz
 import pytesseract
+from dotenv import load_dotenv
 from PIL import Image
 
 """
@@ -12,13 +15,15 @@ pura (get_text() devuelve 0 caracteres), pymupdf4llm la omite con un marcador
 del tipo '==> picture [...] intentionally omitted <=='.
 """
 
+load_dotenv()
+
 OCR_DPI = 550            # resolucion de render
 OCR_LANG = "spa"         # idioma de Tesseract (requiere el traineddata 'spa' instalado)
 MARGEN_DERECHO = 0.82    # se descarta todo lo que este a la derecha de este % del ancho (firmas/rubricas)
 MARGEN_INFERIOR = 1.0    # idem para el pie de pagina (1.0 = no recortar; bajar si el pie trae firmas)
 
 # Si Tesseract no quedo en el PATH del sistema, descomentar y apuntar al binario:
-pytesseract.pytesseract.tesseract_cmd = r"C:/Users/agupereira/AppData/Local/Programs/Tesseract-OCR/tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_CMD")
 
 
 def ocr_pagina(pagina: fitz.Page) -> str:
