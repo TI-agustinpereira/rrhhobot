@@ -18,11 +18,11 @@ para activar la venv, desde la raiz correr
 
 para cargar todo un directorio para correr
 
-        python run_pipeline.py docs/
+        python run_pipeline.py docs_procesar/
 
 para cargar un solo documento para correr
 
-        python run_pipeline.py docs/filename.pdf
+        python run_pipeline.py docs_procesar/filename.pdf
 
 para hacer una query correr
 
@@ -32,4 +32,16 @@ para hacer una query correr
 para levantar el frontend: uvicorn api.main:app --reload
 
 
-No agrego ingestion/ al git: solo mi pc ingiere docs para poder medir consumo de tokens y mi pc se encarga de la carga de pdfs. 
+## Comandos útiles
+
+```powershell
+# Ingesta local
+python run_pipeline.py "docs/archivo.pdf"     # un PDF
+python run_pipeline.py docs/                   # carpeta entera
+
+# Levantar la web local
+uvicorn api.main:app --reload                  # http://127.0.0.1:8000/
+
+# Consulta por CLI
+python -m rag.generator "mi pregunta"
+```

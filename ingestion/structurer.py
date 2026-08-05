@@ -186,9 +186,7 @@ def estructurar_documento(doc_result: DocumentResult) -> list[Clausula]:
     clausulas_raw = llamar_llm(texto)
     print(f"  LLM identificó {len(clausulas_raw)} cláusulas")
 
-    # pisar la pagina que adivino el LLM con la pagina real (matching contra el OCR).
-    # Se hace aca, sobre el texto limpio de la clausula, ANTES de que el chunker
-    # le agregue el overlap de la clausula anterior (que arruinaria el match).
+    # pisar la pagina que adivino el LLM con la pagina real
     for clausula_dict in clausulas_raw:
         clausula_dict["pagina"] = calcular_pagina(
             clausula_dict.get("texto", ""), doc_result.paginas

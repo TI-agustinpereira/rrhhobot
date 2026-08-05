@@ -11,8 +11,7 @@ from api.routes.chats import router as chats_router
 from api.auth import verificar_credenciales
 from db.connection import verificar_conexion
 
-# Teams es opcional: en el deploy web slim botbuilder no se instala, asi que
-# si no esta disponible se omite el adaptador y la app igual sirve la web.
+
 try:
     from botbuilder.core import BotFrameworkAdapter, BotFrameworkAdapterSettings
     from botbuilder.schema import Activity
@@ -20,13 +19,6 @@ try:
     TEAMS_DISPONIBLE = True
 except ModuleNotFoundError:
     TEAMS_DISPONIBLE = False
-
-"""
-main.py
-
-Punto de entrada de la api que registra los routers y el adaptador del bot de Teams
-
-"""
 
 load_dotenv()
 logger = logging.getLogger(__name__)
